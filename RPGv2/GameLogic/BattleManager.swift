@@ -5,138 +5,129 @@
 //  Created by Thiago de Oliveira Sousa on 31/12/25.
 //
 
-import SpriteKit
+import SwiftUI
+import Combine
 
-class BattleManager {
+@MainActor
+final class BattleManager: ObservableObject {
+    
+//    private var router: Router
+    
     let player: Player
     let enemy: Player
-    
-    var isPlayerTurn = true
-    
-    // TODO: - Mudar para criar logica de atualizar vida e status na tela (renomear funcao)
-    var turnEndAction: ((Int, Int) -> Void)?
-    
-    var dialogAction: ((String) async -> Void)?
-    
-//    weak var BattleHud: BattleHud?
+
+    // Publicados para a UI reagir
+    @Published var playerHealth: Int
+    @Published var enemyHealth: Int
+    @Published var playerStatusEffects: [any StatusEffect] = []
+    @Published var enemyStatusEffects: [any StatusEffect] = []
+    @Published var isPlayerTurn = true
+    @Published var dialogText: String = ""
+
+    @Published var dialogAction: ((String) async -> Void)?
     
     init(player: Player, enemy: Player) {
         self.player = player
         self.enemy = enemy
+        self.playerHealth = player.health
+        self.enemyHealth = enemy.health
     }
-    
+
+    // Sincroniza os @Published com o estado real dos Players
+    private func syncState() {
+        playerHealth = player.health
+        enemyHealth = enemy.health
+        playerStatusEffects = player.statusEffects
+        enemyStatusEffects = enemy.statusEffects
+    }
+
     func playerAttack(attackIndex: Int) {
         Task {
             let attack = player.character.attacks[attackIndex]
-            
+
             player.character.attackPlayer(
                 player: player,
                 enemy: enemy,
                 with: attack
             )
-            
+
             attack.decraseAttacksRemaining(quantity: 1)
-//            BattleHud?.updateAttackRemaning(attack: attack)
-            
+            syncState()
+
             logDebug("quantidade de ataques do \(attack.name): \(attack.remainingAttacks)")
-            
-//            BattleHud?.updatePlayerHeart(value: player.health)
-//            BattleHud?.updateEnemyHeart(value: enemy.health)
-            
+
             isPlayerTurn = false
-//            BattleHud?.enableAttacks(isAnabled: false)
-            
-//            await dialogAction?("\(player.character.name) usou \(attack.name)")
-            await dialogAction?("\(attack.attackDiolog)")
-            
+
+            await dialogAction?(attack.attackDiolog)
             attack.setAttackdialog("")
-            
+
             await sleep(seconds: 2)
-            
+
             if checkIsEnd() {
                 await endGame()
                 return
             }
-            
+
             startEnemyTurn()
         }
     }
 
     func startEnemyTurn() {
         Task {
-            // 1. Processa o status assim que começa o turno
             await self.enemy.processStatusEffects()
-//            BattleHud?.updateStatusEffectPanel(playerStatus: player.statusEffects,
-//                                               enemyStatus: enemy.statusEffects)
-//            BattleHud?.updateEnemyHeart(value: enemy.health)
-            
-            
+            syncState()
+
             if checkIsEnd() {
                 await endGame()
                 return
             }
-            
-            // tempo antes de começar o ataque
+
             await sleep(seconds: 2)
-            
-            // 2. Começa o ataque
+
             var attack = enemy.character.attacks.randomElement()!
-            
+
             while attack.remainingAttacks <= 0 && enemy.hasAttack() {
                 logDebug("trocando de ataque pois o selecionado não está habilitado")
                 attack = enemy.character.attacks.randomElement()!
             }
-            
+
             await self.dialogAction?("\(self.enemy.character.name) usou \(attack.name)")
-            
+
             self.enemy.character.attackPlayer(
                 player: self.enemy,
                 enemy: self.player,
                 with: attack
             )
-            
+
             attack.decraseAttacksRemaining(quantity: 1)
-//            BattleHud?.updateAttackRemaning(attack: attack)
-            
+            syncState()
+
             logDebug("quantidade de ataques do \(attack.name): \(attack.remainingAttacks)")
-            
-            
-            // Finaliza o Ataque
-//            BattleHud?.updateEnemyHeart(value: enemy.health)
-//            BattleHud?.updatePlayerHeart(value: player.health)
-            
+
             if checkIsEnd() {
                 await endGame()
                 return
             }
-            
-            // 3. Começa o ataque do Player
+
             await sleep(seconds: 2)
             startPlayerTurn()
         }
     }
-    
+
     func startPlayerTurn() {
         Task {
-            // Processa o efeitos do Player
             await self.player.processStatusEffects()
-//            BattleHud?.updateStatusEffectPanel(playerStatus: player.statusEffects,
-//                                               enemyStatus: enemy.statusEffects)
-//            BattleHud?.updatePlayerHeart(value: player.health)
+            syncState()
 
             if checkIsEnd() {
                 await endGame()
                 return
             }
-            
-            self.isPlayerTurn = true
 
-//            BattleHud?.enableAttacks(isAnabled: true)
-//            
-//            await BattleHud?.updateDialog(text: "O que \(player.character.name) quer fazer?")
+            self.isPlayerTurn = true
         }
     }
-    
+
     func sleep(seconds: TimeInterval) async {
         try? await Task.sleep(
             nanoseconds: UInt64(seconds * 1_000_000_000)
@@ -152,25 +143,26 @@ extension BattleManager {
 
     func endGame() async {
         await sleep(seconds: 3)
-        
-//        BattleHud?.enableAttacks(isAnabled: false)
+
+        isPlayerTurn = false
+
         if player.health <= 0 {
             print("Inimigo ganhou")
-//            await BattleHud?.updateDialog(text: "\(enemy.character.name) ganhou!!")
+            await dialogAction?("\(enemy.character.name) ganhou!!")
         }
 
         if enemy.health <= 0 {
             print("Player ganhou")
-//            await BattleHud?.updateDialog(text: "\(player.character.name) ganhou!!")
+            await dialogAction?("\(player.character.name) ganhou!!")
         }
-        
+
         await sleep(seconds: 3)
         player.reset()
         enemy.reset()
-//        BattleHud?.resetAttacksButtons()
-//        BattleHud?.updateEnemyHeart(value: enemy.health)
-//        BattleHud?.updatePlayerHeart(value: player.health)
+        syncState()
 
         startPlayerTurn()
+        
+        // TODO: - Navegar para a tela de selecao
     }
 }

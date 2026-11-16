@@ -5,7 +5,7 @@
 //  Created by Thiago de Oliveira Sousa on 27/12/25.
 //
 
-import SpriteKit
+import Foundation
 
 class Player {
     var character: Character
@@ -80,12 +80,11 @@ class Player {
     }
     
     private func displayStatus(status: StatusEffect) async {
-//        guard let battleHud else { return }
         switch status.type {
         case .poison:
+            await DialogController.shared.show("\(character.name) está envenenado!")
+        default:
             break
-//            await battleHud.updateDialog(text: "\(character.name) esta envenado")
-        default: break
         }
     }
     

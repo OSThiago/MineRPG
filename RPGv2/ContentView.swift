@@ -10,29 +10,29 @@ import SwiftUI
 struct ContentView: View {
 
     @StateObject private var router = Router()
+    @StateObject private var gameSession = GameSession()
 
     var body: some View {
-        router.buildedView(scene: router.currentScene)
+        buildView(for: router.currentScene)
             .ignoresSafeArea()
             .environmentObject(router)
+            .environmentObject(gameSession)
+    }
+
+    @ViewBuilder
+    private func buildView(for scene: AppScene) -> some View {
+        switch scene {
+        case .select:
+            SelectionView()
+        case .battle:
+            BattleView(
+                player: gameSession.selectedPlayer ?? Steve(),
+                enemy: gameSession.selectedEnemy ?? Steve()
+            )
+        }
     }
 }
 
 #Preview {
     ContentView()
-}
-
-struct BattleView: View {
-    
-    @EnvironmentObject var router: Router
-    
-    var body: some View {
-        VStack {
-            Text("Batalha")
-            
-            Button("Selecao") {
-                router.navigate(to: .select)
-            }
-        }
-    }
 }

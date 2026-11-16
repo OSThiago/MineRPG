@@ -21,14 +21,4 @@ final class Router: ObservableObject {
             self.currentScene = scene
         }
     }
-
-    @ViewBuilder
-    func buildedView(scene: AppScene) -> some View {
-        switch scene {
-        case .battle:
-            BattleView()
-        case .select:
-            SelectionView()
-        }
-    }
 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct SelectionView: View {
     
     @EnvironmentObject var router: Router
+    @EnvironmentObject var gameSession: GameSession
     
     let characters: [Character] = [Enderman(),
                                    Steve(),
@@ -19,6 +20,9 @@ struct SelectionView: View {
     @State var selectedCharacter: Character?
     @State var selectedEnemy: Character?
     
+    private var canStart: Bool {
+        selectedCharacter != nil && selectedEnemy != nil
+    }
     
     var body: some View {
         VStack {
@@ -33,21 +37,23 @@ struct SelectionView: View {
             
             Spacer()
             
-                Button {
-                    router.navigate(to: .battle)
-                } label: {
-                    ZStack {
-                        Rectangle()
-                            .frame(width: 200, height: 80)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                        
-                        Text("Play")
-                            .font(.largeTitle)
-                            .foregroundStyle(.white)
-                    }
+            Button {
+                gameSession.selectedPlayer = selectedCharacter
+                gameSession.selectedEnemy = selectedEnemy
+                router.navigate(to: .battle)
+            } label: {
+                ZStack {
+                    Rectangle()
+                        .frame(width: 200, height: 80)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                    
+                    Text("Play")
+                        .font(.largeTitle)
+                        .foregroundStyle(.white)
                 }
-
-
+            }
+            .disabled(!canStart)
+            .opacity(canStart ? 1 : 0.4)
         }
     }
 }
@@ -90,6 +96,5 @@ extension SelectionView {
 }
 
 #Preview {
-    // Preview precisa de um UIViewController mock para o AppRouter
     SelectionView()
 }
