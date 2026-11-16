@@ -82,14 +82,14 @@ struct BattleView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.borderedProminent)
                     .disabled(!battleManager.isPlayerTurn)
                 }
             }
             Spacer()
         }
         .safeAreaPadding(.all)
-        .padding(.horizontal, 32)
+        .padding(.vertical, 32)
         .background(Color.black)
         .onAppear {
             // Conecta o BattleManager ao DialogController compartilhado.

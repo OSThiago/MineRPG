@@ -51,10 +51,12 @@ struct SelectionView: View {
                         .font(.largeTitle)
                         .foregroundStyle(.white)
                 }
+                .padding(.bottom)
             }
             .disabled(!canStart)
             .opacity(canStart ? 1 : 0.4)
         }
+        .padding(.top, 50)
     }
 }
 

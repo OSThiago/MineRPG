@@ -59,10 +59,9 @@ final class BattleManager: ObservableObject {
             isPlayerTurn = false
 
             await dialogAction?(attack.attackDiolog)
+            await sleep(seconds: 1.5)
             attack.setAttackdialog("")
-
-            await sleep(seconds: 2)
-
+            
             if checkIsEnd() {
                 await endGame()
                 return
@@ -82,7 +81,7 @@ final class BattleManager: ObservableObject {
                 return
             }
 
-            await sleep(seconds: 2)
+            await sleep(seconds: 0.5)
 
             var attack = enemy.character.attacks.randomElement()!
 
@@ -109,7 +108,7 @@ final class BattleManager: ObservableObject {
                 return
             }
 
-            await sleep(seconds: 2)
+            await sleep(seconds: 1)
             startPlayerTurn()
         }
     }
@@ -142,7 +141,7 @@ extension BattleManager {
     }
 
     func endGame() async {
-        await sleep(seconds: 3)
+        await sleep(seconds: 1.5)
 
         isPlayerTurn = false
 
@@ -156,7 +155,7 @@ extension BattleManager {
             await dialogAction?("\(player.character.name) ganhou!!")
         }
 
-        await sleep(seconds: 3)
+        await sleep(seconds: 2)
         player.reset()
         enemy.reset()
         syncState()

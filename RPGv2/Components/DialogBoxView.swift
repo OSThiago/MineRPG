@@ -32,8 +32,8 @@ struct DialogBoxView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 20)
-            .transition(.opacity.combined(with: .move(edge: .bottom)))
+            .frame(height: 40)
+//            .transition(.opacity.combined(with: .move(edge: .bottom)))
             .animation(.easeInOut(duration: 0.2), value: controller.isVisible)
         }
     }

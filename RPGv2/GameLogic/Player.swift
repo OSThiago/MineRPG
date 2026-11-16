@@ -62,7 +62,7 @@ class Player {
         for status in statusEffects {
             status.onTurnStart(player: self)
             await displayStatus(status: status)
-            await sleep(seconds: 2)
+//            await sleep(seconds: 0.5)
         }
         
         statusEffects.removeAll { $0.remainingTurns <= 0 }
