@@ -92,6 +92,7 @@ struct BattleView: View {
         .padding(.vertical, 32)
         .background(Color.black)
         .onAppear {
+            battleManager.battleProtocol = self
             // Conecta o BattleManager ao DialogController compartilhado.
             // O manager apenas chama essa closure e aguarda — sem saber nada de UI.
             battleManager.dialogAction = { text in
@@ -101,6 +102,11 @@ struct BattleView: View {
     }
 }
 
+extension BattleView: BattleManagerProtocol {
+    func battleDidEnd() {
+        router.navigate(to: .select)
+    }
+}
 
 #Preview {
     BattleView(player: Steve(), enemy: Zombie())

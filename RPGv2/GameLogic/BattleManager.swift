@@ -8,10 +8,14 @@
 import SwiftUI
 import Combine
 
+protocol BattleManagerProtocol {
+    func battleDidEnd()
+}
+
 @MainActor
 final class BattleManager: ObservableObject {
     
-//    private var router: Router
+    var battleProtocol: BattleManagerProtocol?
     
     let player: Player
     let enemy: Player
@@ -160,8 +164,8 @@ extension BattleManager {
         enemy.reset()
         syncState()
 
-        startPlayerTurn()
-        
-        // TODO: - Navegar para a tela de selecao
+        if let battleProtocol {
+            battleProtocol.battleDidEnd()
+        }
     }
 }
